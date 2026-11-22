@@ -2,12 +2,13 @@
   <div class="app-container">
 
     <!-- 搜索表单 -->
-    <el-form ref="queryRef" :inline="true" label-width="68px">
+    <el-form ref="queryRef" :model="queryParams" :inline="true" label-width="68px">
       <el-form-item label="名称" prop="name">
         <el-input
-            v-model="queryParams.name"
-            placeholder="请输入名称"
-            clearable
+          v-model="queryParams.name"
+          placeholder="请输入名称"
+          clearable
+          @keyup.enter="handleQuery"
         />
       </el-form-item>
       <el-form-item>
@@ -20,26 +21,29 @@
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
         <el-button
-            type="primary"
-            plain
-            icon="Plus"
-            @click="handleAdd"
-            v-hasPermi="['device:cabinetType:add']"
+          type="primary"
+          plain
+          icon="Plus"
+          @click="handleAdd"
+          v-hasPermi="['device:cabinetType:add']"
         >新增</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button
-            type="success"
-            plain
-            icon="Edit"
+          type="success"
+          plain
+          icon="Edit"
+          :disabled="single"
+          @click="handleUpdate"
         >修改</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button
-            type="danger"
-            plain
-            icon="Delete"
-            @click="handleDelete"
+          type="danger"
+          plain
+          icon="Delete"
+          :disabled="multiple"
+          @click="handleDelete"
         >删除</el-button>
       </el-col>
     </el-row>
@@ -110,152 +114,148 @@
 </template>
   
 <script setup name="CabinetType">
-  //引入api接口
- import { listCabinetType,addCabinetType,getCabinetType,updateCabinetType,delCabinetType } from "@/api/device/cabinetType";
- //引入ElMessage组件
- import {ElMessage,ElMessageBox} from "element-plus";
-  //定义分页列表数据模型
-  const cabinetTypeList = ref([]);
-  //定义列表总记录数模型
-  const total = ref(0);
-  //数据加载使用图标
-  const loading = ref(true);
-  //弹框
-  const open = ref(false)
-  //弹出框页面显示名称
-  const title = ref("")
-  //定义分页参数和条件数据
-  const data = reactive({
-      //定义搜索模型
-    queryParams: {
-      pageNum: 1,//当前页
-      pageSize: 2, //每页记录数
-      name: null
-    },
-    //封装表单数据
-    form:{}
-  })
-  //转换普通对象
-  const { queryParams,form } = toRefs(data);
-  //定义批量操作id列表模型
-  const ids = ref([]);
-  //定义单选控制模型
-  const single = ref(true);
-  //定义多选控制模型
-  const multiple = ref(true);
+import {
+  listCabinetType,
+  addCabinetType,
+  getCabinetType,
+  updateCabinetType,
+  delCabinetType
+} from "@/api/device/cabinetType";
+import { ElMessage, ElMessageBox } from "element-plus";
 
-  ///////////////////==删除==////////////////////////////////////
-  function handleSelectionChange(selection) {
-    ids.value = selection.map(item => item.id);
-    // single.value = selection.length != 1;
-    // multiple.value = !selection.length;
+const { proxy } = getCurrentInstance();
 
+const cabinetTypeList = ref([]);
+const total = ref(0);
+const loading = ref(true);
+const open = ref(false);
+const title = ref("");
+const ids = ref([]);
+const single = ref(true);
+const multiple = ref(true);
+
+const data = reactive({
+  form: {},
+  queryParams: {
+    pageNum: 1,
+    pageSize: 10,
+    name: null
+  },
+  rules: {
+    name: [
+      { required: true, message: "名称不能为空", trigger: "blur" }
+    ],
+    totalSlots: [
+      { required: true, message: "请选择总插槽数量", trigger: "change" }
+    ]
   }
-  function handleDelete(row) {
-    const cid = row.id || ids.value
-    ElMessageBox.confirm('是否确认删除柜机类型数据项？', "系统提示", {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: "warning",
-    }).then(function() {
-      return delCabinetType(cid);
-    }).then(() => {
-      getList();
-      ElMessage.success("删除成功");
-    });
-  }
+});
 
-  ///////////////////==修改==////////////////////////////////////
-  //根据id查询数据回显
-  function handleUpdate(row) {
-    reset()
-    //获取修改数据id值
-    const cid = row.id
-    //调用方法
-    getCabinetType(cid).then(response => {
-      //得到接口返回数据
-      form.value = response.data
-      //弹框
-      open.value = true
-      title.value = "修改柜机类型";
-    })
-  }
+const { queryParams, form, rules } = toRefs(data);
 
-  ///////////////////==添加==////////////////////////////////////
-  function handleAdd() {
-    reset();
-    open.value = true //弹出框
-    title.value = "添加柜机类型"
-  }
+/** 查询柜机类型列表 */
+function getList() {
+  loading.value = true;
+  listCabinetType(queryParams.value).then(response => {
+    cabinetTypeList.value = response.rows;
+    total.value = response.total;
+  }).finally(() => {
+    loading.value = false;
+  });
+}
 
-  //添加方法
-  function submitForm() {
-    //判断添加还是修改
-    if(form.value.id != null) {//修改
-      updateCabinetType(form.value).then(response => {
-        //提示
-        ElMessage.success("修改成功")
-        //关闭弹框
-        open.value = false
-        //刷新页面
-        getList()
-      })
-    } else { //添加
-      addCabinetType(form.value).then(response => {
-        //提示
-        ElMessage.success("新增成功")
-        //关闭弹框
-        open.value = false
-        //刷新页面
-        getList()
-      })
+/** 搜索按钮操作 */
+function handleQuery() {
+  queryParams.value.pageNum = 1;
+  getList();
+}
+
+/** 重置按钮操作 */
+function resetQuery() {
+  proxy.resetForm("queryRef");
+  handleQuery();
+}
+
+/** 多选框选中数据 */
+function handleSelectionChange(selection) {
+  ids.value = selection.map(item => item.id);
+  single.value = selection.length !== 1;
+  multiple.value = !selection.length;
+}
+
+/** 新增按钮操作 */
+function handleAdd() {
+  reset();
+  open.value = true;
+  title.value = "添加柜机类型";
+}
+
+/** 修改按钮操作 */
+function handleUpdate(row) {
+  reset();
+  const id = row?.id || ids.value[0];
+  getCabinetType(id).then(response => {
+    form.value = response.data;
+    open.value = true;
+    title.value = "修改柜机类型";
+  });
+}
+
+/** 提交按钮 */
+function submitForm() {
+  proxy.$refs["cabinetTypeRef"].validate(valid => {
+    if (!valid) {
+      return;
     }
+    if (form.value.id != null) {
+      updateCabinetType(form.value).then(() => {
+        ElMessage.success("修改成功");
+        open.value = false;
+        getList();
+      });
+    } else {
+      addCabinetType(form.value).then(() => {
+        ElMessage.success("新增成功");
+        open.value = false;
+        getList();
+      });
+    }
+  });
+}
 
-  }
+/** 删除按钮操作 */
+function handleDelete(row) {
+  const idList = row?.id || ids.value;
+  ElMessageBox.confirm("是否确认删除柜机类型数据项？", "系统提示", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning"
+  }).then(() => {
+    return delCabinetType(idList);
+  }).then(() => {
+    getList();
+    ElMessage.success("删除成功");
+  }).catch(() => {});
+}
 
-  // 表单重置
-  function reset() {
-    form.value = {
-      id: null,
-      name: null,
-      totalSlots: null,
-      description: null,
-      status: null,
-      remark: null
-    };
-  }
+/** 表单重置 */
+function reset() {
+  form.value = {
+    id: null,
+    name: null,
+    totalSlots: null,
+    description: null,
+    status: null,
+    remark: null
+  };
+  proxy.resetForm("cabinetTypeRef");
+}
 
-  // 取消按钮
-  function cancel() {
-    open.value = false;
-    reset();
-  }
+/** 取消按钮 */
+function cancel() {
+  open.value = false;
+  reset();
+}
 
-  ////////////////////==分页列表==///////////////////////////////////
-  //分页列表调用
-  function getList() {
-    listCabinetType(queryParams.value).then(response => {
-      cabinetTypeList.value = response.rows;
-      total.value = response.total;
-      loading.value = false;
-    })
-  }
-
-  //搜索
-  function handleQuery() {
-    getList()
-  }
-
-  //重置
-  function resetQuery() {
-    queryParams.value.pageNum = 1
-    queryParams.value.pageSize = 2
-    queryParams.value.name = null
-    handleQuery();
-  }
-
-  //执行查询柜机类型列表
-  getList()
-
-
+getList();
 </script>

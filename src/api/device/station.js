@@ -46,7 +46,7 @@ export function delStation(id) {
 // 新增站点
 export function setData(data) {
   return request({
-    url: '/station/setData',
+    url: '/device/station/setData',
     method: 'post',
     data: data
   })
