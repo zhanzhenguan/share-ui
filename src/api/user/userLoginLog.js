@@ -17,24 +17,6 @@ export function getUserLoginLog(id) {
   })
 }
 
-// 新增用户登录记录
-export function addUserLoginLog(data) {
-  return request({
-    url: '/user/userLoginLog',
-    method: 'post',
-    data: data
-  })
-}
-
-// 修改用户登录记录
-export function updateUserLoginLog(data) {
-  return request({
-    url: '/user/userLoginLog',
-    method: 'put',
-    data: data
-  })
-}
-
 // 删除用户登录记录
 export function delUserLoginLog(id) {
   return request({

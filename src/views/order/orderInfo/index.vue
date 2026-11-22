@@ -11,7 +11,7 @@
       </el-form-item>
       <el-form-item label="订单状态">
         <el-select
-            v-model="queryParams.orderStatus"
+            v-model="queryParams.status"
             class="m-2"
             placeholder="订单状态"
             style="width: 100%"
@@ -24,7 +24,7 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="创建时间" style="width: 308px">
+      <el-form-item label="借用开始时间" style="width: 308px">
         <el-date-picker
             v-model="dateRange"
             value-format="YYYY-MM-DD"
@@ -180,32 +180,31 @@
         <el-row>
           <el-col :span="12">
             <el-form-item label="昵称">
-              {{ form.userInfoVo.nickname }}
+              {{ form.userInfoVo?.nickname }}
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item label="微信标识">
-              {{ form.userInfoVo.wxOpenId }}
+              {{ form.userInfoVo?.wxOpenId }}
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col :span="12">
             <el-form-item label="注册时间">
-              {{ form.userInfoVo.createTime }}
+              {{ form.userInfoVo?.createTime }}
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item label="最近登录时间">
-              {{ form.userInfoVo.lastLoginTime }}
+              {{ form.userInfoVo?.lastLoginTime }}
             </el-form-item>
           </el-col>
         </el-row>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="submitForm">确 定</el-button>
-          <el-button @click="cancel">取 消</el-button>
+          <el-button type="primary" @click="cancel">关 闭</el-button>
         </div>
       </template>
     </el-dialog>
@@ -249,9 +248,9 @@ const data = reactive({
 });
 
 const orderStatusList = ref([
-  { id: 0, name: '充电中' },
-  { id: 1, name: '未支付' },
-  { id: 2, name: '已完成' },
+  { id: '0', name: '充电中' },
+  { id: '1', name: '未支付' },
+  { id: '2', name: '已完成' },
 ])
 
 const { queryParams, form } = toRefs(data);
@@ -260,17 +259,16 @@ const dateRange = ref([]);
 /** 查询订单列表 */
 function getList() {
   loading.value = true;
-  listOrderInfo(queryParams.value).then(response => {
+  listOrderInfo(proxy.addDateRange(queryParams.value, dateRange.value, 'StartTime')).then(response => {
     orderInfoList.value = response.rows;
     total.value = response.total;
     loading.value = false;
   });
 }
 
-// 取消按钮
+// 关闭按钮
 function cancel() {
   open.value = false;
-  reset();
 }
 
 
@@ -282,6 +280,7 @@ function handleQuery() {
 
 /** 重置按钮操作 */
 function resetQuery() {
+  dateRange.value = [];
   proxy.resetForm("queryRef");
   handleQuery();
 }
@@ -291,15 +290,13 @@ function handleShow(id) {
   getOrderInfo(id).then(response => {
     form.value = response.data;
     open.value = true;
-    title.value = "修改订单";
+    title.value = "订单详情";
   });
 }
 
 /** 导出按钮操作 */
 function handleExport() {
-  proxy.download('order/orderInfo/export', {
-    ...queryParams.value
-  }, `orderInfo_${new Date().getTime()}.xlsx`)
+  proxy.download('order/orderInfo/export', proxy.addDateRange({ ...queryParams.value }, dateRange.value, 'StartTime'), `orderInfo_${new Date().getTime()}.xlsx`)
 }
 
 getList();

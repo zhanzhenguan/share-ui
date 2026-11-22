@@ -4,7 +4,7 @@
       <el-input v-model="keyword" placeholder="请输入关键字" style="width: 92%;margin-right: 10px;"/>
       <el-button type="primary" @click="search()" style="width: 5%;">搜索</el-button>
     </div>
-    <div id="container"></div>
+    <div id="container" style="height: calc(100vh - 120px);"></div>
 
   </div>
 </template>
@@ -108,14 +108,15 @@ function initMapData(center) {
       });
       infoWindowList[i] = infoWindow;
       infoWindow.close();//初始关闭信息窗关闭
-      //监听标注点击事件
-      markerLayer.on("click", function (evt) {
-        //关闭全部信息窗
-        infoWindowList.forEach(item => item.close());
-        // 打开点击的信息窗
-        infoWindowList[Number(evt.geometry.id)].open();
-      })
     }
+    //监听标注点击事件（只注册一次，避免循环内重复绑定）
+    markerLayer.on("click", function (evt) {
+      //关闭全部信息窗
+      infoWindowList.forEach(item => item && item.close());
+      // 打开点击的信息窗
+      const target = infoWindowList[Number(evt.geometry.id)];
+      if (target) target.open();
+    })
   });
 }
 

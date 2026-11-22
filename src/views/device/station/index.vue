@@ -129,6 +129,20 @@
         <el-form-item label="站点负责人电话" prop="headPhone">
           <el-input v-model="form.headPhone" placeholder="请输入站点负责人电话" />
         </el-form-item>
+        <el-form-item label="费用规则" prop="feeRuleId">
+          <el-select
+              v-model="form.feeRuleId"
+              placeholder="请选择费用规则"
+              style="width: 100%;"
+          >
+            <el-option
+                v-for="item in feeRuleList"
+                :key="item.id"
+                :label="item.name"
+                :value="item.id"
+            />
+          </el-select>
+        </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
@@ -139,7 +153,7 @@
     </el-dialog>
 
     <el-dialog title="设置经纬度" v-model="openMap" width="50%" append-to-body>
-      <div id="container"></div>
+      <div id="container" style="height: 500px;"></div>
       <template #footer>
         <div class="dialog-footer">
           <el-button type="primary" @click="submitMap">确 定</el-button>
@@ -194,6 +208,7 @@
         <el-descriptions-item label="详细地址">{{ form.fullAddress }}</el-descriptions-item>
         <el-descriptions-item label="站点负责人">{{ form.headName }}</el-descriptions-item>
         <el-descriptions-item label="负责人电话">{{ form.headPhone }}</el-descriptions-item>
+        <el-descriptions-item label="费用规则">{{ getFeeRuleName(form.feeRuleId) }}</el-descriptions-item>
         <el-descriptions-item label="创建时间">{{ form.createTime }}</el-descriptions-item>
       </el-descriptions>
       <el-descriptions title="柜机信息">
@@ -500,6 +515,10 @@ function initMap() {
 }
 
 function submitMap() {
+  if (!latLng.value || latLng.value.lat == null || latLng.value.lng == null) {
+    proxy.$modal.msgWarning("请先在地图上选择位置");
+    return;
+  }
   openMap.value = false
   form.value.latitude = latLng.value.lat;
   form.value.longitude = latLng.value.lng;
@@ -523,7 +542,6 @@ function querySearch(keyword, cb) {
         id: item.id
       }
     })
-    debugger
     cb(array)
   });
 }
@@ -540,8 +558,19 @@ function getFeeRuleList() {
 }
 getFeeRuleList()
 
+// 根据费用规则ID获取规则名称（详情展示用）
+function getFeeRuleName(id) {
+  if (id == null) return '-';
+  const item = feeRuleList.value.find(r => r.id === id);
+  return item ? item.name : '-';
+}
+
 function submitSet() {
-  setData(form.value).then(response => {
+  setData({
+    id: form.value.id,
+    cabinetId: form.value.cabinetId,
+    feeRuleId: form.value.feeRuleId
+  }).then(response => {
     proxy.$modal.msgSuccess("关联设置成功");
     openSet.value = false;
     getList();

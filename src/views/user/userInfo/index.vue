@@ -81,7 +81,7 @@
           </el-col>
           <el-col :span="12">
             <el-form-item label="性别">
-              {{ form.sex == 1 ? '女' : '男' }}
+              {{ form.gender == 1 ? '女' : '男' }}
             </el-form-item>
           </el-col>
         </el-row>
@@ -122,7 +122,7 @@
 
         <el-divider />
         <span style="margin-bottom: 5px;">订单信息</span>
-        <el-table :data="orderInfoList">
+        <el-table :data="orderInfoList" v-loading="orderLoading">
           <el-table-column label="订单号" prop="orderNo" width="90"/>
           <el-table-column label="借用开始时间" prop="startTime" width="160">
             <template #default="scope">
@@ -218,7 +218,6 @@ function getList() {
 // 取消按钮
 function cancel() {
   open.value = false;
-  reset();
 }
 
 // 表单重置
@@ -230,33 +229,40 @@ function handleQuery() {
 
 /** 重置按钮操作 */
 function resetQuery() {
+  dateRange.value = [];
   proxy.resetForm("queryRef");
   handleQuery();
 }
 
 /** 修改按钮操作 */
 function handleShow(id) {
+  orderInfoList.value = [];
   getUserInfo(id).then(response => {
     form.value = response.data;
     open.value = true;
     title.value = "详情";
-
     getUserOrderList(form.value.id);
   });
 }
 
 const orderInfoList = ref([]);
+const orderLoading = ref(false);
 function getUserOrderList(id) {
+  orderLoading.value = true;
   listUserOrderInfo(id).then(response => {
-    orderInfoList.value = response.data;
+    orderInfoList.value = response.data || [];
+  }).catch(() => {
+    orderInfoList.value = [];
+  }).finally(() => {
+    orderLoading.value = false;
   });
 }
 
 /** 导出按钮操作 */
 function handleExport() {
-  proxy.download('user/userInfo/export', {
+  proxy.download('user/userInfo/export', proxy.addDateRange({
     ...queryParams.value
-  }, `userInfo_${new Date().getTime()}.xlsx`)
+  }, dateRange.value), `userInfo_${new Date().getTime()}.xlsx`)
 }
 
 getList();

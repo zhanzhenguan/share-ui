@@ -94,6 +94,12 @@
         <el-form-item label="规则描述" prop="description">
           <el-input v-model="form.description" type="textarea" rows="5" placeholder="请输入内容" />
         </el-form-item>
+        <el-form-item label="状态" prop="status">
+          <el-radio-group v-model="form.status">
+            <el-radio label="1">正常</el-radio>
+            <el-radio label="2">停用</el-radio>
+          </el-radio-group>
+        </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
@@ -137,18 +143,6 @@ const data = reactive({
     rule: [
       { required: true, message: "规则代码不能为空", trigger: "blur" }
     ],
-    status: [
-      { required: true, message: "状态代码，1有效，2关闭不能为空", trigger: "change" }
-    ],
-    createTime: [
-      { required: true, message: "创建时间不能为空", trigger: "blur" }
-    ],
-    updateTime: [
-      { required: true, message: "更新时间不能为空", trigger: "blur" }
-    ],
-    delFlag: [
-      { required: true, message: "删除标志不能为空", trigger: "blur" }
-    ],
   }
 });
 
@@ -177,7 +171,7 @@ function reset() {
     name: null,
     rule: null,
     description: null,
-    status: null,
+    status: '1',
     createTime: null,
     createBy: null,
     updateTime: null,
