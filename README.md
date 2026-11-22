@@ -97,3 +97,19 @@ com.ruoyi
 文档地址：http://doc.ruoyi.vip
 
 ## 演示图
+<img width="1899" height="877" alt="image" src="https://github.com/user-attachments/assets/64743d28-d68d-42f2-a6db-05fa6e3d99bd" />
+<img width="1892" height="907" alt="image" src="https://github.com/user-attachments/assets/1937009b-46de-436c-8c30-7ba390911ce2" />
+<img width="1901" height="876" alt="image" src="https://github.com/user-attachments/assets/713b7a96-b4f0-47e5-8aa7-b7a2bdf9f4f3" />
+<img width="1904" height="913" alt="image" src="https://github.com/user-attachments/assets/4023ed1f-34ed-46fe-a587-c8c562feefe7" />
+<img width="1895" height="838" alt="image" src="https://github.com/user-attachments/assets/7617ae12-6171-486a-b602-c715dd507fa4" />
+<img width="1905" height="852" alt="image" src="https://github.com/user-attachments/assets/ba04e1f8-4051-4eac-9e97-4997e3fb9797" />
+<img width="1905" height="837" alt="image" src="https://github.com/user-attachments/assets/642b490d-2b6c-4166-a8e5-927a570f84aa" />
+<img width="1898" height="916" alt="image" src="https://github.com/user-attachments/assets/495d018c-9d8c-44b9-9ff4-544e60ee0699" />
+<img width="1903" height="754" alt="image" src="https://github.com/user-attachments/assets/faf9c137-719e-4129-86df-f70df2b705e2" />
+<img width="1898" height="763" alt="image" src="https://github.com/user-attachments/assets/3effc2b4-108b-450d-a1ba-1c67832309c5" />
+
+
+
+
+
+
